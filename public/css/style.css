@@ -1,7 +1,7 @@
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  box-sizing: border-box
 }
 body {
   font: 13px Helvetica, Arial;
@@ -25,6 +25,7 @@ form button {
   border: none;
   padding: 10px;
 }
+
 #messages {
   list-style-type: none;
   margin: 0;
@@ -35,4 +36,20 @@ form button {
 }
 #messages li:nth-child(odd) {
   background: #eee;
+}
+
+#setUserName_Box{
+  background-color: grey;
+  width: 400px;
+  height: 120px;
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+#setUserName_Box button{
+  width: 50px;
+  margin: 10px;
 }

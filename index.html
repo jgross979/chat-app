@@ -7,11 +7,25 @@
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       $(function(){
-        var socket = io();
+        const socket = io();
+        let id;
+        let userName;
 
-        $('form').submit(function(e){
+        socket.on('connect', () =>{
+          id = socket.id;
+        });
+        $('.setUserName').submit(function(e){
+          e.preventDefault();
+          userName = $('#username').val();
+          $('#username').val('');
+
+          $('#setUserName_Box').hide();
+          return false;
+        })
+
+        $('.sendMessage').submit(function(e){
           e.preventDefault(); // prevents page reloading
-          socket.emit('chat message', $('#m').val());
+          socket.emit('chat message', userName + ": " +$('#m').val());
           $('#m').val('');
           return false;
         });
@@ -23,9 +37,22 @@
     </script>
   </head>
   <body>
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
+    <div id="container">
+      <ul id="messages"></ul>
+
+      <div id="setUserName_Box">
+        <h3>Set your user name</h3>
+        <form class="setUserName" action="">
+          <input id="username" type="text" autocomplete="off" placeholder="Username">
+          <button>Send</button>
+        </form>
+      </div>
+
+      <form  class= "sendMessage" action="">
+        <input id="m" autocomplete="off" /><button>Send</button>
+      </form>
+
+    </div>
+
   </body>
 </html>
