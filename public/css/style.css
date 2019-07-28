@@ -6,6 +6,51 @@
 body {
   font: 13px Helvetica, Arial;
 }
+/* TOP */
+#topContainer{
+  height: 90%;
+}
+#messages {
+  position: fixed;
+  width: 70%;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+#messages li {
+  padding: 5px 10px;
+}
+#messages li:nth-child(odd) {
+  background: #eee;
+}
+#sidebar{
+  background: grey;
+  position: fixed;
+  right: 0;
+  width: 30%;
+}
+.userList{
+  list-style-type: none;
+}
+/* BOTTOM */
+
+#bottomContainer{
+  position: fixed;
+  bottom: 0;
+  height: 10%;
+}
+
+#typing{
+  background: rgb(130, 224, 255);
+  height: 50px;
+  width: 200px;
+
+}
+
+.hidden{
+  display: none;
+}
+
 form {
   background: #000;
   padding: 3px;
@@ -26,18 +71,7 @@ form button {
   padding: 10px;
 }
 
-#messages {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
-#messages li {
-  padding: 5px 10px;
-}
-#messages li:nth-child(odd) {
-  background: #eee;
-}
-
+/*MISC*/
 #setUserName_Box{
   background-color: grey;
   width: 400px;
