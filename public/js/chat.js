@@ -39,9 +39,16 @@ $(function(){
   socket.on('userLeave', (msg)=>{
     $('#messages').append($('<li>').text(msg));
   });
-  socket.on('typing', (msg)=>{
-    $('#typing').removeClass('hidden');
-    $('#typing').find('.typingNotification').text(msg);
+
+  socket.on('typing', (msg, typingUsers)=>{
+    if(typingUsers.includes(userName)){
+      determineIsTypingOutput(socket, typingUsers);
+    }else{
+      $('#typing').removeClass('hidden');
+      $('#typing').find('.typingNotification').text(msg);
+    }
+
+
   });
   socket.on('doneTyping', (userName)=>{
     $('#typing').addClass('hidden');
@@ -68,10 +75,43 @@ $(function(){
     if(typing === false && $('#m').val() !== ''){
       socket.emit('typing', userName);
       typing = true;
-    }else if(typing === true && $('#m').val() === ''){
+    }else if($('#m').val() === ''){
       socket.emit('doneTyping', userName);
       typing = false;
     }
   });
+/****************************HELPER FUNCTIONS********************************/
+function determineIsTypingOutput(socket, typingUsers){
+  let output = '';
+  //Singular case
+  if(typingUsers.length === 2 && typingUsers[0] !== userName){
+    output = `${typingUsers[0]} is typing...`;
+  }else if(typingUsers.length === 2 && typingUsers[0] === userName){
+    output = `${typingUsers[1]} is typing...`;
+  }
+  //Plural case
+  if(typingUsers.length > 2 && typingUsers[0] !== userName){
+    output = typingUsers[0];
+    for(i = 1; i < typingUsers.length; i ++){
+      if(typingUsers[i] !== userName){
+        output += `, ${typingUsers[i]}`;
+      }
+    }
+    output += ' are typing...';
+  }else if(typingUsers.length > 2 && typingUsers[0] === userName){
+    output = typingUsers[1];
+    for(i = 2; i < typingUsers.length; i ++){
+      output += `, ${typingUsers[i]}`;
+    }
+      output += ' are typing...';
+  }
+
+  if(output !== ''){
+    $('#typing').removeClass('hidden');
+    $('#typing').find('.typingNotification').text(output);
+  }
+}
+
+
 
 });
