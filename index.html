@@ -5,60 +5,10 @@
     <link rel="stylesheet" type="text/css" href="css/style.css">
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-    <script>
-      $(function(){
-        const socket = io();
-        let id;
-        let userName;
-
-        /**************************FORM SUBMISSIONS*********************************/
-        $('.setUserName').submit(function(e){
-          //prevents page reloading
-          e.preventDefault();
-
-          userName = $('#username').val();
-          $('#username').val('');
-
-          //emit event to server
-          socket.emit('welcome', `${userName} has joined the chat!`, userName);
-
-          $('#setUserName_Box').hide();
-          return false;
-        })
-
-        $('.sendMessage').submit(function(e){
-          e.preventDefault(); // prevents page reloading
-          socket.emit('chat message', userName + ": " +$('#m').val());
-          $('#m').val('');
-          return false;
-        });
-        /**************************CHAT*********************************/
-        //Add welcome alert for new members
-        socket.on('welcome', (msg)=>{
-          $('#messages').append($('<li>').text(msg));
-        });
-        //Adds new chat messages
-        socket.on('chat message', (msg)=>{
-          $('#messages').append($('<li>').text(msg));
-        });
-        //Alert a user has disconnected
-        socket.on('leave', (msg)=>{
-          $('#messages').append($('<li>').text(msg));
-        });
-
-
-        /**************************CALLS FROM SERVER*********************************/
-        socket.on('getName', ()=>{
-          socket.emit('name', userName);
-        });
-
-        /**************************CALLS TO SERVER*********************************/
-
-      });
-    </script>
+    <script src="js/chat.js"></script>
   </head>
   <body>
-    <div id="container">
+    <div id="topContainer">
       <ul id="messages"></ul>
 
       <div id="setUserName_Box">
@@ -69,11 +19,20 @@
         </form>
       </div>
 
+      <div id="sidebar">
+        <div class="userBar">
+          <h3>ONLINE:</h3>
+          <ul class="userList"></ul>
+        </div>
+      </div>
+    </div>
+    <div id="bottomContainer">
+      <div id="typing" class="hidden">
+        <p class = "typingNotification"></p>
+      </div>
       <form  class= "sendMessage" action="">
         <input id="m" autocomplete="off" /><button>Send</button>
       </form>
-
     </div>
-
   </body>
 </html>
