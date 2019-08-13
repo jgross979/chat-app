@@ -12,11 +12,12 @@ app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
-/************SOCKET MANAGEMENT****************/
+/************SERVER DATA****************/
 let allClients = [];
 let users = [];
 let typingUsers = [];
 
+/************SOCKET MANAGEMENT****************/
 io.on('connection', onConnect);
 
 function onConnect(socket){
