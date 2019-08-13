@@ -6,6 +6,10 @@
 body {
   font: 13px Helvetica, Arial;
 }
+#messages::-webkit-scrollbar {
+    width: 0px;
+    background: transparent; /* make scrollbar transparent */
+}
 /* TOP */
 #topContainer{
   height: 90%;
@@ -16,6 +20,9 @@ body {
   list-style-type: none;
   margin: 0;
   padding: 0;
+  overflow-y: auto;
+  height: 93%;
+  max-height: 93%;
 }
 #messages li {
   padding: 5px 10px;

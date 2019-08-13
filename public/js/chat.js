@@ -34,6 +34,8 @@ $(function(){
   //Adds new chat messages
   socket.on('chat message', (msg)=>{
     $('#messages').append($('<li>').text(msg));
+    scrollToBottom();
+    console.log($('#messages').height());
   });
   //Alert a user has disconnected
   socket.on('userLeave', (msg)=>{
@@ -47,12 +49,14 @@ $(function(){
       $('#typing').removeClass('hidden');
       $('#typing').find('.typingNotification').text(msg);
     }
-
-
+    $('#messages').height($('#messages').height() - 50);
+    scrollToBottom();
   });
   socket.on('doneTyping', (userName)=>{
     $('#typing').addClass('hidden');
     $('#typing').find('.typingNotification').text('');
+    $('#messages').height($('#messages').height() + 50);
+    scrollToBottom();
   });
 
   /******************SIDE BAR**********************************/
@@ -110,6 +114,12 @@ function determineIsTypingOutput(socket, typingUsers){
     $('#typing').removeClass('hidden');
     $('#typing').find('.typingNotification').text(output);
   }
+}
+
+function scrollToBottom() {
+  const messages = document.getElementById('messages');
+  messages.scrollTop = messages.scrollHeight;
+  console.log(`scrollTop: ${messages.scrollTop}\nscrollHeight: ${messages.scrollHeight}`);
 }
 
 
