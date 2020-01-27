@@ -5,6 +5,7 @@ $(function(){
   let typing = false;
 
   /**************************FORM SUBMISSIONS*********************************/
+  //Submit form to set the username
   $('.setUserName').submit(function(e){
     //prevents page reloading
     e.preventDefault();
@@ -19,6 +20,7 @@ $(function(){
     return false;
   })
 
+  //Submit a message from the user when they press the send button
   $('.sendMessage').submit(function(e){
     e.preventDefault(); // prevents page reloading
     socket.emit('chat message', userName + ": " +$('#m').val());
@@ -27,21 +29,29 @@ $(function(){
     return false;
   });
   /**************************CHAT*********************************/
+
   //Add welcome alert for new members
+  //Message received from the server
   socket.on('welcome', (msg)=>{
     $('#messages').append($('<li>').text(msg));
   });
+
   //Adds new chat messages
+  //Message recieved from the server
   socket.on('chat message', (msg)=>{
     $('#messages').append($('<li>').text(msg));
     scrollToBottom();
     console.log($('#messages').height());
   });
+
   //Alert a user has disconnected
+  //Message recieved from the server
   socket.on('userLeave', (msg)=>{
     $('#messages').append($('<li>').text(msg));
   });
 
+  //Alert that a user or group of userss is typing
+  //Message and list of users received from the server
   socket.on('typing', (msg, typingUsers)=>{
     if(typingUsers.includes(userName)){
       determineIsTypingOutput(socket, typingUsers);
@@ -52,6 +62,9 @@ $(function(){
     $('#messages').height($('#messages').height() - 50);
     scrollToBottom();
   });
+
+  //Alert that a user has finished typing, so that the typing users can be changed accordingly
+  //TODO update typing users list with a broadcast
   socket.on('doneTyping', (userName)=>{
     $('#typing').addClass('hidden');
     $('#typing').find('.typingNotification').text('');
@@ -60,6 +73,7 @@ $(function(){
   });
 
   /******************SIDE BAR**********************************/
+  //Updates the user list when users enter or leave the chat
   socket.on('userList', (userList)=>{
     $('.userList').html('');
     userList.forEach((user)=>{
@@ -75,6 +89,8 @@ $(function(){
   /**************************CALLS TO SERVER*********************************/
 
   /****************************CLIENT-SIDE EVENTS*******************************/
+  //Alert the server when client is typing and when client stops
+  //Sends message with userName
   $('#m').on('input', (e)=>{
     if(typing === false && $('#m').val() !== ''){
       socket.emit('typing', userName);
@@ -116,6 +132,7 @@ function determineIsTypingOutput(socket, typingUsers){
   }
 }
 
+//Automatically scrolls to the latest message
 function scrollToBottom() {
   const messages = document.getElementById('messages');
   messages.scrollTop = messages.scrollHeight;
