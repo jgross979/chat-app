@@ -50,7 +50,7 @@ $(function(){
     $('#messages').append($('<li>').text(msg));
   });
 
-  //Alert that a user or group of userss is typing
+  //Alert that a user or group of users is typing
   //Message and list of users received from the server
   socket.on('typing', (msg, typingUsers)=>{
     if(typingUsers.includes(userName)){
@@ -64,6 +64,7 @@ $(function(){
   });
 
   //Alert that a user has finished typing, so that the typing users can be changed accordingly
+  //List of users recieved from the server
   //TODO update typing users list with a broadcast
   socket.on('doneTyping', (userName)=>{
     $('#typing').addClass('hidden');
@@ -96,6 +97,7 @@ $(function(){
       socket.emit('typing', userName);
       typing = true;
     }else if($('#m').val() === ''){
+      console.log(userName + " is done typing");
       socket.emit('doneTyping', userName);
       typing = false;
     }
@@ -125,7 +127,7 @@ function determineIsTypingOutput(socket, typingUsers){
     }
       output += ' are typing...';
   }
-
+  //Either add the names of typing users or hide the "is typing box if there is no one"
   if(output !== ''){
     $('#typing').removeClass('hidden');
     $('#typing').find('.typingNotification').text(output);

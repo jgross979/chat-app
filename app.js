@@ -3,7 +3,10 @@ const app = express();
 const http = require('http').createServer(app);
 const Server = require('socket.io');
 const io = new Server(http);
+const mysql = require('mysql');
 
+
+/************CONNECTIONS/ROUTING****************/
 const port = process.env.PORT || 3000;
 
 app.use(express.static(__dirname + '/public'));
@@ -11,6 +14,19 @@ app.use(express.static(__dirname + '/public'));
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
+
+/************MYSQL CONNECTION****************/
+var con = mysql.createConnection({
+  host: "localhost",
+  user: "dev",
+  password: "chatapplication"
+});
+
+con.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected to MYSQL!");
+});
+
 
 /************SERVER DATA****************/
 let allClients = [];
@@ -46,7 +62,6 @@ function onConnect(socket){
 
   //Recieves alert that user is done typing
   socket.on('doneTyping', (userName)=>{
-    console.log('done typing');
     let i = typingUsers.indexOf(userName);
     typingUsers.splice(i, 1);
     userIsTypingOutput(socket, true);
@@ -84,11 +99,6 @@ function onConnect(socket){
       socket.broadcast.emit('doneTyping');
     }
   }
-
-
-
-
-
 
 
 http.listen(port, function(){
