@@ -5,14 +5,32 @@ const Server = require('socket.io');
 const io = new Server(http);
 const mysql = require('mysql');
 
+/************EXPRESS CONFIG*********************/
+//Set up public directory for use
+app.use(express.static(__dirname + '/public'));
+
+// Parse URL-encoded bodies (as sent by HTML forms)
+app.use(express.urlencoded());
+
+// Parse JSON bodies (as sent by API clients)
+app.use(express.json());
 
 /************CONNECTIONS/ROUTING****************/
 const port = process.env.PORT || 3000;
 
-app.use(express.static(__dirname + '/public'));
-
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
+});
+
+app.get('/signup', function(req, res){
+  res.sendFile(__dirname + '/signup.html');
+});
+
+// Access signup results as request.body
+app.post('/signup', function(request, response){
+  console.log(request.body.user.username);
+  console.log(request.body.user.psw);
+  console.log(request.body.user.psw_repeat);
 });
 
 /************MYSQL CONNECTION****************/
