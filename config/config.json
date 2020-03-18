@@ -1,0 +1,10 @@
+{
+  "development": {
+    "username": "dev",
+    "password": "chatapplication",
+    "database": "chat_application",
+    "host": "localhost",
+    "dialect": "mysql",
+    "operatorsAliases": false
+  }
+}

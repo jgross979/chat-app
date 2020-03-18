@@ -1,16 +1,20 @@
 const express = require('express');
+const session = require('session');
 const app = express();
 const http = require('http').createServer(app);
 const Server = require('socket.io');
 const io = new Server(http);
 const mysql = require('mysql');
 
+//Import the models folder
+const db = require("./models");
+
 /************EXPRESS CONFIG*********************/
 //Set up public directory for use
 app.use(express.static(__dirname + '/public'));
 
 // Parse URL-encoded bodies (as sent by HTML forms)
-app.use(express.urlencoded());
+app.use(express.urlencoded({extended: true}));
 
 // Parse JSON bodies (as sent by API clients)
 app.use(express.json());
@@ -27,10 +31,11 @@ app.get('/signup', function(req, res){
 });
 
 // Access signup results as request.body
-app.post('/signup', function(request, response){
-  console.log(request.body.user.username);
-  console.log(request.body.user.psw);
-  console.log(request.body.user.psw_repeat);
+app.post('/signup', function(req, res){
+  console.log(req.body.user.username);
+  console.log(req.body.user.psw);
+  console.log(req.body.user.psw_repeat);
+  res.sendFile(__dirname + '/index.html');
 });
 
 /************MYSQL CONNECTION****************/
@@ -40,9 +45,38 @@ var con = mysql.createConnection({
   password: "chatapplication"
 });
 
-con.connect(function(err) {
+// var values = [
+//   ['test1' , 'pass'],
+//   ['test2' , 'pass'],
+//   ['test3' , 'pass'],
+//   ['test4' , 'pass'],
+//   ['test5' , 'pass'],
+//   ['test6' , 'pass'],
+//   ['test7' , 'pass'],
+//   ['test8' , 'pass'],
+//   ['test9' , 'pass'],
+//   ['test10', 'pass'],
+//   ['test11', 'pass'],
+//   ['test12', 'pass'],
+//   ['test13', 'pass'],
+//   ['test14', 'pass']
+// ];
+//
+// let sql_insert = "INSERT INTO `chat_application`.`User` (Username, Password) VALUES ?";
+
+// con.query(sql_insert, [values], function (err, result) {
+//   if (err) throw err;
+//   console.log("Number of records inserted: " + result.affectedRows);
+// });
+
+let sql_select = "SELECT *\n" +
+          "FROM `chat_application`.`User`";
+
+con.query(sql_select, function (err, result) {
   if (err) throw err;
-  console.log("Connected to MYSQL!");
+  for(let i = 0; i < result.length; i ++){
+    console.log("User_ID: "+ result[i].User_ID +" Username: " + result[i].Username + " Password: " + result[i].Password);
+  }
 });
 
 
@@ -119,6 +153,6 @@ function onConnect(socket){
   }
 
 
-http.listen(port, function(){
+app.listen(port, function(){
   console.log(`listening on *:${port}`);
 });
