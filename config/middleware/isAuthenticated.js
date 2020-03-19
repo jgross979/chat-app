@@ -6,5 +6,6 @@ module.exports = function(req, res, next) {
     }
     // If the user isn't' logged in, redirect them to the login page
     //REDIRECT ROUTE NEEDS TO BE CHANGED TO THE LOGIN PAGE
-    return res.redirect("/");
+    return res.redirect("/signup");
+
 };

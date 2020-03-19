@@ -1,13 +1,37 @@
 const express = require('express');
-const session = require('session');
+const session = require('express-session');
 const app = express();
 const http = require('http').createServer(app);
 const Server = require('socket.io');
 const io = new Server(http);
-const mysql = require('mysql');
+const mysql = require("mysql");
+const bcrypt = require("bcryptjs");
 
-//Import the models folder
+
+// Requiring passport as we've configured it
+const passport = require("./config/passport");
+
+//Set up port
+const port = process.env.PORT || 3000;
+
+//Import models folder and set important relationships
 const db = require("./models");
+db.User.hasMany(db.Message); //Set one to many relationship
+db.Message.belongsTo(db.User);
+
+// Hooks are automatic methods that run during various phases of the User Model lifecycle
+// In this case, before a User is created, we will automatically hash their password
+
+// db.User.beforeCreate(user => {
+//  user.password = bcrypt.hashSync(user.password, bcrypt.genSaltSync(10), null);
+// });
+
+// Syncing our database and logging a message to the user upon success
+db.sequelize.sync().then(function() {
+  http.listen(port, function(){
+    console.log(`listening on *:${port}`);
+  });
+});
 
 /************EXPRESS CONFIG*********************/
 //Set up public directory for use
@@ -19,66 +43,17 @@ app.use(express.urlencoded({extended: true}));
 // Parse JSON bodies (as sent by API clients)
 app.use(express.json());
 
-/************CONNECTIONS/ROUTING****************/
-const port = process.env.PORT || 3000;
 
-app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
-});
+// We need to use sessions to keep track of our user's login status
+app.use(session({ secret: "keyboard cat", resave: true, saveUninitialized: true }));
+app.use(passport.initialize());
+app.use(passport.session());
 
-app.get('/signup', function(req, res){
-  res.sendFile(__dirname + '/signup.html');
-});
 
-// Access signup results as request.body
-app.post('/signup', function(req, res){
-  console.log(req.body.user.username);
-  console.log(req.body.user.psw);
-  console.log(req.body.user.psw_repeat);
-  res.sendFile(__dirname + '/index.html');
-});
 
-/************MYSQL CONNECTION****************/
-var con = mysql.createConnection({
-  host: "localhost",
-  user: "dev",
-  password: "chatapplication"
-});
-
-// var values = [
-//   ['test1' , 'pass'],
-//   ['test2' , 'pass'],
-//   ['test3' , 'pass'],
-//   ['test4' , 'pass'],
-//   ['test5' , 'pass'],
-//   ['test6' , 'pass'],
-//   ['test7' , 'pass'],
-//   ['test8' , 'pass'],
-//   ['test9' , 'pass'],
-//   ['test10', 'pass'],
-//   ['test11', 'pass'],
-//   ['test12', 'pass'],
-//   ['test13', 'pass'],
-//   ['test14', 'pass']
-// ];
-//
-// let sql_insert = "INSERT INTO `chat_application`.`User` (Username, Password) VALUES ?";
-
-// con.query(sql_insert, [values], function (err, result) {
-//   if (err) throw err;
-//   console.log("Number of records inserted: " + result.affectedRows);
-// });
-
-let sql_select = "SELECT *\n" +
-          "FROM `chat_application`.`User`";
-
-con.query(sql_select, function (err, result) {
-  if (err) throw err;
-  for(let i = 0; i < result.length; i ++){
-    console.log("User_ID: "+ result[i].User_ID +" Username: " + result[i].Username + " Password: " + result[i].Password);
-  }
-});
-
+// Requiring our routes
+require("./routes/html-routes.js")(app);
+require("./routes/api-routes.js")(app);
 
 /************SERVER DATA****************/
 let allClients = [];
@@ -153,6 +128,3 @@ function onConnect(socket){
   }
 
 
-app.listen(port, function(){
-  console.log(`listening on *:${port}`);
-});

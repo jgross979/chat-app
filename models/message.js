@@ -7,6 +7,7 @@ module.exports = function(sequelize, DataTypes) {
         Message_ID: {
             type: DataTypes.INTEGER,
             primaryKey: true,
+            autoIncrement: true,
             allowNull: false,
             unique: true
         },
@@ -18,11 +19,13 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             allowNull: false,
             unique: true,
-            references: 'User',
-            referencesKey: 'User_ID'
+            references: {
+                model: 'Users',
+                key: 'User_ID'
+            }
         },
         Message_Date: {
-            type: DataTypes.DATETIME,
+            type: DataTypes.DATE,
             allowNull: false
         },
         Message_Image: {
@@ -31,7 +34,5 @@ module.exports = function(sequelize, DataTypes) {
         }
     });
 
-    User.hasMany(Message); //Set one to many relationship
-
-    return message;
+    return Message;
 }
