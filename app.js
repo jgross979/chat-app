@@ -1,11 +1,12 @@
+//Import express and express session for routing and sessions
 const express = require('express');
 const session = require('express-session');
 const app = express();
+
+//Socket.io setup
 const http = require('http').createServer(app);
 const Server = require('socket.io');
 const io = new Server(http);
-const mysql = require("mysql");
-const bcrypt = require("bcryptjs");
 
 
 // Requiring passport as we've configured it
@@ -14,17 +15,11 @@ const passport = require("./config/passport");
 //Set up port
 const port = process.env.PORT || 3000;
 
-//Import models folder and set important relationships
+//Import models folder (for database) and set important relationships
 const db = require("./models");
 db.User.hasMany(db.Message); //Set one to many relationship
 db.Message.belongsTo(db.User);
 
-// Hooks are automatic methods that run during various phases of the User Model lifecycle
-// In this case, before a User is created, we will automatically hash their password
-
-// db.User.beforeCreate(user => {
-//  user.password = bcrypt.hashSync(user.password, bcrypt.genSaltSync(10), null);
-// });
 
 // Syncing our database and logging a message to the user upon success
 db.sequelize.sync().then(function() {
@@ -33,7 +28,7 @@ db.sequelize.sync().then(function() {
   });
 });
 
-/************EXPRESS CONFIG*********************/
+/************EXPRESS CONFIGURATION*********************/
 //Set up public directory for use
 app.use(express.static(__dirname + '/public'));
 
@@ -44,13 +39,14 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
 
+/****************SET UP PASSPORT SESSION***************/
 // We need to use sessions to keep track of our user's login status
 app.use(session({ secret: "keyboard cat", resave: true, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 
 
-
+/**************GET ROUTES**********************/
 // Requiring our routes
 require("./routes/html-routes.js")(app);
 require("./routes/api-routes.js")(app);
@@ -61,70 +57,73 @@ let users = [];
 let typingUsers = [];
 
 /************SOCKET MANAGEMENT****************/
-io.on('connection', onConnect);
+const Chatroom = require("./services/Chatroom");
+const main = new Chatroom('', io);
 
-function onConnect(socket){
-  let userName;
-  allClients.push(socket);
-  io.emit('userList', users);
-
-  //Welcome new users
-  socket.on('welcome', (msg, name)=>{
-    socket.broadcast.emit('welcome', msg);
-    userName = name;
-    users.push(userName);
-    io.emit('userList', users);
-  });
-
-  //Recieves chat message and sends it out to all including sender
-  socket.on('chat message', (msg)=>{
-    io.emit('chat message', msg);
-  });
-
-  //Recieves alert that a user is typing
-  socket.on('typing', (userName)=>{
-    typingUsers.push(userName);
-    userIsTypingOutput(socket, false);
-  });
-
-  //Recieves alert that user is done typing
-  socket.on('doneTyping', (userName)=>{
-    let i = typingUsers.indexOf(userName);
-    typingUsers.splice(i, 1);
-    userIsTypingOutput(socket, true);
-  });
-
-  //Disconnection
-  socket.on('disconnect', (reason)=>{
-      console.log(reason);
-      socket.broadcast.emit('userLeave', `${userName} left the chat`);
-      let i = allClients.indexOf(socket);
-      allClients.splice(i, 1);
-      users.splice(i, 1);
-      //user done typing event
-      i = typingUsers.indexOf(userName);
-      if(i !== -1){
-        typingUsers.splice(i, 1);
-        userIsTypingOutput(socket, true);
-      }
-      //    ----
-      io.emit('userList', users);
-  });
-  }
-
-  function userIsTypingOutput(socket, isDone){
-    if(typingUsers.length >= 2){
-      let outputString = typingUsers[0];
-      for(i = 1; i < typingUsers.length; i ++){
-        outputString += `, ${typingUsers[i]}`;
-      }
-      outputString += " are typing...";
-      socket.broadcast.emit('typing', outputString, typingUsers);
-    }else if(typingUsers.length === 1 && !isDone){
-      socket.broadcast.emit('typing', `${typingUsers[0]} is typing...`, typingUsers);
-    }else if(typingUsers.length <= 1){
-      socket.broadcast.emit('doneTyping');
-    }
-  }
+main.listen();
+// io.on('connection', onConnect);
+//
+// function onConnect(socket){
+//   let userName;
+//   allClients.push(socket);
+//   io.emit('userList', users);
+//
+//   //Welcome new users
+//   socket.on('welcome', (msg, name)=>{
+//     socket.broadcast.emit('welcome', msg);
+//     userName = name;
+//     users.push(userName);
+//     io.emit('userList', users);
+//   });
+//
+//   //Recieves chat message and sends it out to all including sender
+//   socket.on('chat message', (msg)=>{
+//     io.emit('chat message', msg);
+//   });
+//
+//   //Recieves alert that a user is typing
+//   socket.on('typing', (userName)=>{
+//     typingUsers.push(userName);
+//     userIsTypingOutput(socket, false);
+//   });
+//
+//   //Recieves alert that user is done typing
+//   socket.on('doneTyping', (userName)=>{
+//     let i = typingUsers.indexOf(userName);
+//     typingUsers.splice(i, 1);
+//     userIsTypingOutput(socket, true);
+//   });
+//
+//   //Disconnection
+//   socket.on('disconnect', (reason)=>{
+//       socket.broadcast.emit('userLeave', `${userName} left the chat`);
+//       let i = allClients.indexOf(socket);
+//       allClients.splice(i, 1);
+//       users.splice(i, 1);
+//       //user done typing event
+//       i = typingUsers.indexOf(userName);
+//       if(i !== -1){
+//         typingUsers.splice(i, 1);
+//         userIsTypingOutput(socket, true);
+//       }
+//       //    ----
+//       io.emit('userList', users);
+//   });
+//   }
+//
+//   function userIsTypingOutput(socket, isDone){
+//     if(typingUsers.length >= 2){
+//       let outputString = typingUsers[0];
+//       for(i = 1; i < typingUsers.length; i ++){
+//         outputString += `, ${typingUsers[i]}`;
+//       }
+//       outputString += " are typing...";
+//       socket.broadcast.emit('typing', outputString, typingUsers);
+//     }else if(typingUsers.length === 1 && !isDone){
+//       socket.broadcast.emit('typing', `${typingUsers[0]} is typing...`, typingUsers);
+//     }else if(typingUsers.length <= 1){
+//       socket.broadcast.emit('doneTyping');
+//     }
+//   }
 
 
